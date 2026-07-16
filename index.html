@@ -357,26 +357,20 @@
             ctx.fillStyle = "#ffcc00";
             ctx.fillRect(0, 350, canvas.width, 4);
 
-            // Karakter Utama saat main
+            // Karakter Utama saat main (Kembali Menggunakan Default Beruang Cokelat Penuh)
             segawon.danceTimer += 0.25;
             let runBounce = segawon.isGrounded ? Math.sin(segawon.danceTimer) * 2 : 0;
             
-            if (imgKelompok.complete && imgKelompok.naturalWidth !== 0) {
-                // Gunakan logo kelompok sebagai karakter utama yang melompat jika berhasil termuat
-                ctx.drawImage(imgKelompok, segawon.x, segawon.y + runBounce, segawon.width, segawon.height);
-            } else {
-                // Default Beruang Cokelat
-                ctx.fillStyle = "#8B4513";
-                ctx.beginPath();
-                ctx.roundRect(segawon.x, segawon.y + runBounce, segawon.width, segawon.height, 12);
-                ctx.fill();
-                ctx.fillStyle = "#5c2d0c";
-                ctx.beginPath(); ctx.arc(segawon.x + 8, segawon.y + runBounce, 8, 0, Math.PI*2); ctx.arc(segawon.x + 42, segawon.y + runBounce, 8, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = "#000";
-                ctx.beginPath(); ctx.arc(segawon.x + 18, segawon.y + 18 + runBounce, 3.5, 0, Math.PI*2); ctx.arc(segawon.x + 34, segawon.y + 18 + runBounce, 3.5, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = "#f5d9a0";
-                ctx.beginPath(); ctx.arc(segawon.x + 26, segawon.y + 25 + runBounce, 5, 0, Math.PI*2); ctx.fill();
-            }
+            ctx.fillStyle = "#8B4513";
+            ctx.beginPath();
+            ctx.roundRect(segawon.x, segawon.y + runBounce, segawon.width, segawon.height, 12);
+            ctx.fill();
+            ctx.fillStyle = "#5c2d0c";
+            ctx.beginPath(); ctx.arc(segawon.x + 8, segawon.y + runBounce, 8, 0, Math.PI*2); ctx.arc(segawon.x + 42, segawon.y + runBounce, 8, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#000";
+            ctx.beginPath(); ctx.arc(segawon.x + 18, segawon.y + 18 + runBounce, 3.5, 0, Math.PI*2); ctx.arc(segawon.x + 34, segawon.y + 18 + runBounce, 3.5, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#f5d9a0";
+            ctx.beginPath(); ctx.arc(segawon.x + 26, segawon.y + 25 + runBounce, 5, 0, Math.PI*2); ctx.fill();
 
             // Gambar Lebah Madu Ungu (Glow effect)
             let sizeScale = Math.sin(enemy.pulse) * 2.5;
