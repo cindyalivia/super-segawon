@@ -25,41 +25,6 @@
             flex-direction: column;
             gap: 10px;
         }
-        /* Area Kontrol Status Logo */
-        .upload-panel {
-            background: rgba(255, 255, 255, 0.08);
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 1px dashed #ffcc00;
-            color: #fff;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            font-size: 13px;
-            z-index: 20;
-            max-width: 850px;
-            width: 100%;
-        }
-        .upload-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .logo-name-label {
-            background: #ffcc00;
-            color: #000;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        .status-dot {
-            color: #ff3366;
-        }
-        .status-dot.ready {
-            color: #00ffcc;
-        }
         .game-wrapper {
             position: relative;
             width: 100%;
@@ -129,25 +94,6 @@
         <p>🔄 Silakan miringkan HP kamu (Landscape)<br>untuk memainkan Super Segawon!</p>
     </div>
 
-    <!-- Panel Informasi Pencarian Logo Otomatis -->
-    <div class="upload-panel">
-        <div class="upload-item">
-            <span>Sekolah:</span>
-            <span class="logo-name-label">logo smk.jpeg</span>
-            <span id="statusSekolah" class="status-dot">❌</span>
-        </div>
-        <div class="upload-item">
-            <span>Jurusan:</span>
-            <span class="logo-name-label">logo pk moko.jpeg</span>
-            <span id="statusJurusan" class="status-dot">❌</span>
-        </div>
-        <div class="upload-item">
-            <span>Kelompok:</span>
-            <span class="logo-name-label">logo kelompok.jpeg</span>
-            <span id="statusKelompok" class="status-dot">❌</span>
-        </div>
-    </div>
-
     <div class="game-wrapper" id="gameWindow">
         <div class="score-board">SKOR: <span id="scoreVal">0</span></div>
         <canvas id="gameCanvas" width="850" height="400"></canvas>
@@ -166,30 +112,18 @@
         let gameSpeed = 5.5;
         let particles = [];
         
-        // Pemuatan File Gambar Otomatis dari Folder Lokal / Repositori GitHub
+        // Tetap memuat gambar di background agar bisa tampil pas Game Over
         let imgSekolah = new Image();
         imgSekolah.src = "logo smk.jpeg"; 
-        imgSekolah.onload = () => {
-            document.getElementById("statusSekolah").innerText = "✔️";
-            document.getElementById("statusSekolah").className = "status-dot ready";
-            if(gameOver) drawGameOverScreen();
-        };
+        imgSekolah.onload = () => { if(gameOver) drawGameOverScreen(); };
 
         let imgJurusan = new Image();
         imgJurusan.src = "logo pk moko.jpeg";
-        imgJurusan.onload = () => {
-            document.getElementById("statusJurusan").innerText = "✔️";
-            document.getElementById("statusJurusan").className = "status-dot ready";
-            if(gameOver) drawGameOverScreen();
-        };
+        imgJurusan.onload = () => { if(gameOver) drawGameOverScreen(); };
 
         let imgKelompok = new Image();
         imgKelompok.src = "logo kelompok.jpeg";
-        imgKelompok.onload = () => {
-            document.getElementById("statusKelompok").innerText = "✔️";
-            document.getElementById("statusKelompok").className = "status-dot ready";
-            if(gameOver) drawGameOverScreen();
-        };
+        imgKelompok.onload = () => { if(gameOver) drawGameOverScreen(); };
 
         const segawon = {
             x: 90,
@@ -267,30 +201,24 @@
             }
         }
 
-        // Fungsi menggambar layar kalah + menampilkan ketiga logo
         function drawGameOverScreen() {
             ctx.fillStyle = "rgba(16, 8, 28, 0.88)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // TENTUKAN POSISI TIGA LOGO SECARA BERJEJER DI TENGAH
             let logoWidth = 75;
             let logoHeight = 75;
             let yPos = (canvas.height / 2) - 125;
             
-            // Logo Sekolah (Kiri)
             if (imgSekolah.complete && imgSekolah.naturalWidth !== 0) {
                 ctx.drawImage(imgSekolah, (canvas.width / 2) - 130, yPos, logoWidth, logoHeight);
             }
-            // Logo Jurusan (Tengah)
             if (imgJurusan.complete && imgJurusan.naturalWidth !== 0) {
                 ctx.drawImage(imgJurusan, (canvas.width / 2) - 37.5, yPos, logoWidth, logoHeight);
             }
-            // Logo Kelompok (Kanan)
             if (imgKelompok.complete && imgKelompok.naturalWidth !== 0) {
                 ctx.drawImage(imgKelompok, (canvas.width / 2) + 55, yPos, logoWidth, logoHeight);
             }
 
-            // Teks Pengumuman Kalah
             ctx.fillStyle = "#ff3366";
             ctx.font = "bold 38px sans-serif";
             ctx.textAlign = "center";
@@ -351,13 +279,11 @@
                 ctx.globalAlpha = 1.0;
             });
 
-            // Gambar Lantai
             ctx.fillStyle = "#1e0b36";
             ctx.fillRect(0, 350, canvas.width, 50);
             ctx.fillStyle = "#ffcc00";
             ctx.fillRect(0, 350, canvas.width, 4);
 
-            // Karakter Utama saat main (Kembali Menggunakan Default Beruang Cokelat Penuh)
             segawon.danceTimer += 0.25;
             let runBounce = segawon.isGrounded ? Math.sin(segawon.danceTimer) * 2 : 0;
             
@@ -372,7 +298,6 @@
             ctx.fillStyle = "#f5d9a0";
             ctx.beginPath(); ctx.arc(segawon.x + 26, segawon.y + 25 + runBounce, 5, 0, Math.PI*2); ctx.fill();
 
-            // Gambar Lebah Madu Ungu (Glow effect)
             let sizeScale = Math.sin(enemy.pulse) * 2.5;
             ctx.fillStyle = "#8A2BE2";
             ctx.beginPath();
