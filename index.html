@@ -23,6 +23,50 @@
             font-family: Arial, sans-serif;
             overflow: hidden;
             flex-direction: column;
+            gap: 10px;
+        }
+        /* Area Kontrol Upload Multi Logo */
+        .upload-panel {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px dashed #ffcc00;
+            color: #fff;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            font-size: 13px;
+            z-index: 20;
+            max-width: 850px;
+            width: 100%;
+        }
+        .upload-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .upload-item input[type="file"] {
+            display: none;
+        }
+        .custom-upload-btn {
+            background: #ffcc00;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+        .custom-upload-btn:hover {
+            background: #e6b800;
+        }
+        .status-dot {
+            color: #ff3366;
+        }
+        .status-dot.ready {
+            color: #00ffcc;
         }
         .game-wrapper {
             position: relative;
@@ -38,7 +82,6 @@
             display: block;
             background: linear-gradient(to bottom, #1a0b2e 0%, #4c1c5c 100%);
         }
-        /* Tombol Sentuh Virtual Khusus Android/HP */
         .touch-btn {
             position: absolute;
             bottom: 20px;
@@ -75,7 +118,6 @@
             pointer-events: none;
             z-index: 10;
         }
-        /* Instruksi Orientasi Layar */
         .rotate-notice {
             display: none;
             position: fixed;
@@ -95,10 +137,31 @@
         <p>🔄 Silakan miringkan HP kamu (Landscape)<br>untuk memainkan Super Segawon!</p>
     </div>
 
+    <!-- Panel Unggah Tiga Logo -->
+    <div class="upload-panel">
+        <div class="upload-item">
+            <span>Sekolah:</span>
+            <label for="loaderSekolah" class="custom-upload-btn">logo smk.jpeg</label>
+            <input type="file" id="loaderSekolah" accept="image/*">
+            <span id="statusSekolah" class="status-dot">❌</span>
+        </div>
+        <div class="upload-item">
+            <span>Jurusan:</span>
+            <label for="loaderJurusan" class="custom-upload-btn">logo pk moko.jpeg</label>
+            <input type="file" id="loaderJurusan" accept="image/*">
+            <span id="statusJurusan" class="status-dot">❌</span>
+        </div>
+        <div class="upload-item">
+            <span>Kelompok:</span>
+            <label for="loaderKelompok" class="custom-upload-btn">logo kelompok.jpeg</label>
+            <input type="file" id="loaderKelompok" accept="image/*">
+            <span id="statusKelompok" class="status-dot">❌</span>
+        </div>
+    </div>
+
     <div class="game-wrapper" id="gameWindow">
         <div class="score-board">SKOR: <span id="scoreVal">0</span></div>
         <canvas id="gameCanvas" width="850" height="400"></canvas>
-        
         <div class="touch-btn" id="actionBtn">LOMPAT</div>
     </div>
 
@@ -113,13 +176,44 @@
         let gameOver = false;
         let gameSpeed = 5.5;
         let particles = [];
+        
+        // Objek Penampung Tiga Gambar Logo
+        let imgSekolah = null;
+        let imgJurusan = null;
+        let imgKelompok = null;
 
-        // Karakter Segawon (Beruang)
+        // Setup Event Listener untuk masing-masing Input File
+        setupImageLoader("loaderSekolah", "statusSekolah", (img) => imgSekolah = img);
+        setupImageLoader("loaderJurusan", "statusJurusan", (img) => imgJurusan = img);
+        setupImageLoader("loaderKelompok", "statusKelompok", (img) => imgKelompok = img);
+
+        function setupImageLoader(inputId, statusId, callback) {
+            const loader = document.getElementById(inputId);
+            const status = document.getElementById(statusId);
+
+            loader.addEventListener('change', function(e) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        status.innerText = "✔️";
+                        status.className = "status-dot ready";
+                        callback(img);
+                        if(gameOver) drawGameOverScreen();
+                    };
+                    img.src = event.target.result;
+                };
+                if(e.target.files[0]) {
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            }, false);
+        }
+
         const segawon = {
             x: 90,
             y: 290,
-            width: 50,
-            height: 60,
+            width: 55,
+            height: 55,
             velocity: 0,
             gravity: 0.65,
             jumpForce: 14.5,
@@ -127,7 +221,6 @@
             danceTimer: 0
         };
 
-        // Lebah Madu Ungu
         const enemy = {
             x: 950,
             y: 300,
@@ -136,7 +229,6 @@
             pulse: 0
         };
 
-        // Efek Debu Jalanan
         function createParticle(x, y, color) {
             particles.push({
                 x: x, y: y,
@@ -147,20 +239,18 @@
             });
         }
 
-        // Trigger Lompat / Restart
         function doAction(e) {
-            if(e) e.preventDefault(); // Mencegah double-click bawaan browser mobile
+            if(e) e.preventDefault();
             
             if (gameOver) {
                 resetGame();
             } else if (segawon.isGrounded) {
                 segawon.velocity = -segawon.jumpForce;
                 segawon.isGrounded = false;
-                for(let i=0; i<8; i++) createParticle(segawon.x + 25, segawon.y + 60, '#ffcc00');
+                for(let i=0; i<8; i++) createParticle(segawon.x + 25, segawon.y + 55, '#ffcc00');
             }
         }
 
-        // Kontrol Multiplatform (PC & Android)
         actionBtn.addEventListener("touchstart", doAction);
         actionBtn.addEventListener("mousedown", doAction);
         window.addEventListener("keydown", (e) => { if(e.code === "Space") doAction(); });
@@ -184,55 +274,74 @@
             actionBtn.innerText = "MULAI";
             actionBtn.style.background = "rgba(255, 51, 102, 0.6)";
             
-            // Efek Getar Layar HP (Hanya bekerja di beberapa browser Android)
             if (navigator.vibrate) navigator.vibrate(150);
 
             gameWindow.style.animation = "shake 0.2s linear 2";
             setTimeout(() => gameWindow.style.animation = "", 200);
 
             for(let i=0; i<25; i++) {
-                createParticle(segawon.x + 25, segawon.y + 30, '#8B4513');
+                createParticle(segawon.x + 25, segawon.y + 25, '#8B4513');
                 createParticle(enemy.x + 20, enemy.y + 20, '#8A2BE2');
             }
         }
 
-        // Main Loop
+        // Fungsi menggambar layar kalah + menampilkan ketiga logo
+        function drawGameOverScreen() {
+            ctx.fillStyle = "rgba(16, 8, 28, 0.88)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // TENTUKAN POSISI TIGA LOGO SECARA BERJEJER DI TENGAH
+            let logoWidth = 75;
+            let logoHeight = 75;
+            let yPos = (canvas.height / 2) - 125;
+            
+            // Logo Sekolah (Kiri)
+            if (imgSekolah) {
+                ctx.drawImage(imgSekolah, (canvas.width / 2) - 130, yPos, logoWidth, logoHeight);
+            }
+            // Logo Jurusan (Tengah)
+            if (imgJurusan) {
+                ctx.drawImage(imgJurusan, (canvas.width / 2) - 37.5, yPos, logoWidth, logoHeight);
+            }
+            // Logo Kelompok (Kanan)
+            if (imgKelompok) {
+                ctx.drawImage(imgKelompok, (canvas.width / 2) + 55, yPos, logoWidth, logoHeight);
+            }
+
+            // Teks Pengumuman Kalah
+            ctx.fillStyle = "#ff3366";
+            ctx.font = "bold 38px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("SEGAWON KALAH!", canvas.width / 2, canvas.height / 2 + 25);
+
+            ctx.fillStyle = "#fff";
+            ctx.font = "20px sans-serif";
+            ctx.fillText("Skor: " + score, canvas.width / 2, canvas.height / 2 + 65);
+            
+            ctx.fillStyle = "#ffcc00";
+            ctx.font = "16px sans-serif";
+            ctx.fillText("Tekan tombol MERAH di kanan bawah", canvas.width / 2, canvas.height / 2 + 105);
+            ctx.textAlign = "left";
+        }
+
         function update() {
             if (gameOver) {
-                // Gambar Tampilan Game Over Khusus Layar HP
-                ctx.fillStyle = "rgba(16, 8, 28, 0.85)";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                ctx.fillStyle = "#ff3366";
-                ctx.font = "bold 38px sans-serif";
-                ctx.textAlign = "center";
-                ctx.fillText("SEGAWON KALAH!", canvas.width / 2, canvas.height / 2 - 15);
-
-                ctx.fillStyle = "#fff";
-                ctx.font = "20px sans-serif";
-                ctx.fillText("Skor: " + score, canvas.width / 2, canvas.height / 2 + 25);
-                
-                ctx.fillStyle = "#ffcc00";
-                ctx.font = "16px sans-serif";
-                ctx.fillText("Tekan tombol MERAH di kanan bawah", canvas.width / 2, canvas.height / 2 + 65);
-                ctx.textAlign = "left";
+                drawGameOverScreen();
                 return;
             }
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Pergerakan Fisika Beruang
             segawon.velocity += segawon.gravity;
             segawon.y += segawon.velocity;
 
-            if (segawon.y >= 290) {
-                segawon.y = 290;
+            if (segawon.y >= 295) {
+                segawon.y = 295;
                 segawon.velocity = 0;
                 segawon.isGrounded = true;
-                if(Math.random() < 0.15) createParticle(segawon.x, segawon.y + 58, 'rgba(255,255,255,0.3)');
+                if(Math.random() < 0.15) createParticle(segawon.x, segawon.y + 53, 'rgba(255,255,255,0.3)');
             }
 
-            // Pergerakan Lebah Madu
             enemy.x -= gameSpeed;
             enemy.pulse += 0.15;
             if (enemy.x < -enemy.width) {
@@ -242,7 +351,6 @@
                 gameSpeed += 0.35;
             }
 
-            // Cek Tabrakan
             if (
                 segawon.x + 6 < enemy.x + enemy.width &&
                 segawon.x + segawon.width - 6 > enemy.x &&
@@ -252,7 +360,6 @@
                 triggerGameOver();
             }
 
-            // Update & Gambar Partikel
             particles.forEach((p, i) => {
                 p.x += p.speedX; p.y += p.speedY; p.life -= 0.025;
                 if(p.life <= 0) particles.splice(i, 1);
@@ -268,21 +375,26 @@
             ctx.fillStyle = "#ffcc00";
             ctx.fillRect(0, 350, canvas.width, 4);
 
-            // Gambar Segawon (Beruang)
+            // Karakter Utama saat main (Bisa pakai Logo Kelompok atau default Beruang jika kosong)
             segawon.danceTimer += 0.25;
             let runBounce = segawon.isGrounded ? Math.sin(segawon.danceTimer) * 2 : 0;
-            ctx.fillStyle = "#8B4513";
-            ctx.beginPath();
-            ctx.roundRect(segawon.x, segawon.y + runBounce, segawon.width, segawon.height, 12);
-            ctx.fill();
-            // Telinga & Mata
-            ctx.fillStyle = "#5c2d0c";
-            ctx.beginPath(); ctx.arc(segawon.x + 8, segawon.y + runBounce, 8, 0, Math.PI*2); ctx.arc(segawon.x + 42, segawon.y + runBounce, 8, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = "#000";
-            ctx.beginPath(); ctx.arc(segawon.x + 18, segawon.y + 18 + runBounce, 3.5, 0, Math.PI*2); ctx.arc(segawon.x + 34, segawon.y + 18 + runBounce, 3.5, 0, Math.PI*2); ctx.fill();
-            // Moncong Hidung
-            ctx.fillStyle = "#f5d9a0";
-            ctx.beginPath(); ctx.arc(segawon.x + 26, segawon.y + 25 + runBounce, 5, 0, Math.PI*2); ctx.fill();
+            
+            if (imgKelompok) {
+                // Gunakan logo kelompok sebagai karakter utama yang melompat
+                ctx.drawImage(imgKelompok, segawon.x, segawon.y + runBounce, segawon.width, segawon.height);
+            } else {
+                // Default Beruang Cokelat
+                ctx.fillStyle = "#8B4513";
+                ctx.beginPath();
+                ctx.roundRect(segawon.x, segawon.y + runBounce, segawon.width, segawon.height, 12);
+                ctx.fill();
+                ctx.fillStyle = "#5c2d0c";
+                ctx.beginPath(); ctx.arc(segawon.x + 8, segawon.y + runBounce, 8, 0, Math.PI*2); ctx.arc(segawon.x + 42, segawon.y + runBounce, 8, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "#000";
+                ctx.beginPath(); ctx.arc(segawon.x + 18, segawon.y + 18 + runBounce, 3.5, 0, Math.PI*2); ctx.arc(segawon.x + 34, segawon.y + 18 + runBounce, 3.5, 0, Math.PI*2); fill();
+                ctx.fillStyle = "#f5d9a0";
+                ctx.beginPath(); ctx.arc(segawon.x + 26, segawon.y + 25 + runBounce, 5, 0, Math.PI*2); ctx.fill();
+            }
 
             // Gambar Lebah Madu Ungu (Glow effect)
             let sizeScale = Math.sin(enemy.pulse) * 2.5;
@@ -290,7 +402,7 @@
             ctx.beginPath();
             ctx.roundRect(enemy.x - sizeScale/2, enemy.y - sizeScale/2, enemy.width + sizeScale, enemy.height + sizeScale, 8);
             ctx.fill();
-            ctx.fillStyle = "#da70d6"; // Strip kuning/ungu terang
+            ctx.fillStyle = "#da70d6";
             ctx.fillRect(enemy.x + 10 - sizeScale/2, enemy.y, 6, enemy.height);
             ctx.fillRect(enemy.x + 24 - sizeScale/2, enemy.y, 6, enemy.height);
 
