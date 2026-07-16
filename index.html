@@ -25,7 +25,7 @@
             flex-direction: column;
             gap: 10px;
         }
-        /* Area Kontrol Upload Multi Logo */
+        /* Area Kontrol Status Logo */
         .upload-panel {
             background: rgba(255, 255, 255, 0.08);
             padding: 10px 15px;
@@ -46,21 +46,13 @@
             align-items: center;
             gap: 8px;
         }
-        .upload-item input[type="file"] {
-            display: none;
-        }
-        .custom-upload-btn {
+        .logo-name-label {
             background: #ffcc00;
             color: #000;
             padding: 5px 10px;
             border-radius: 4px;
-            cursor: pointer;
             font-weight: bold;
             font-size: 12px;
-            transition: background 0.2s;
-        }
-        .custom-upload-btn:hover {
-            background: #e6b800;
         }
         .status-dot {
             color: #ff3366;
@@ -137,24 +129,21 @@
         <p>🔄 Silakan miringkan HP kamu (Landscape)<br>untuk memainkan Super Segawon!</p>
     </div>
 
-    <!-- Panel Unggah Tiga Logo -->
+    <!-- Panel Informasi Pencarian Logo Otomatis -->
     <div class="upload-panel">
         <div class="upload-item">
             <span>Sekolah:</span>
-            <label for="loaderSekolah" class="custom-upload-btn">logo smk.jpeg</label>
-            <input type="file" id="loaderSekolah" accept="image/*">
+            <span class="logo-name-label">logo smk.jpeg</span>
             <span id="statusSekolah" class="status-dot">❌</span>
         </div>
         <div class="upload-item">
             <span>Jurusan:</span>
-            <label for="loaderJurusan" class="custom-upload-btn">logo pk moko.jpeg</label>
-            <input type="file" id="loaderJurusan" accept="image/*">
+            <span class="logo-name-label">logo pk moko.jpeg</span>
             <span id="statusJurusan" class="status-dot">❌</span>
         </div>
         <div class="upload-item">
             <span>Kelompok:</span>
-            <label for="loaderKelompok" class="custom-upload-btn">logo kelompok.jpeg</label>
-            <input type="file" id="loaderKelompok" accept="image/*">
+            <span class="logo-name-label">logo kelompok.jpeg</span>
             <span id="statusKelompok" class="status-dot">❌</span>
         </div>
     </div>
@@ -177,37 +166,30 @@
         let gameSpeed = 5.5;
         let particles = [];
         
-        // Objek Penampung Tiga Gambar Logo
-        let imgSekolah = null;
-        let imgJurusan = null;
-        let imgKelompok = null;
+        // Pemuatan File Gambar Otomatis dari Folder Lokal / Repositori GitHub
+        let imgSekolah = new Image();
+        imgSekolah.src = "logo smk.jpeg"; 
+        imgSekolah.onload = () => {
+            document.getElementById("statusSekolah").innerText = "✔️";
+            document.getElementById("statusSekolah").className = "status-dot ready";
+            if(gameOver) drawGameOverScreen();
+        };
 
-        // Setup Event Listener untuk masing-masing Input File
-        setupImageLoader("loaderSekolah", "statusSekolah", (img) => imgSekolah = img);
-        setupImageLoader("loaderJurusan", "statusJurusan", (img) => imgJurusan = img);
-        setupImageLoader("loaderKelompok", "statusKelompok", (img) => imgKelompok = img);
+        let imgJurusan = new Image();
+        imgJurusan.src = "logo pk moko.jpeg";
+        imgJurusan.onload = () => {
+            document.getElementById("statusJurusan").innerText = "✔️";
+            document.getElementById("statusJurusan").className = "status-dot ready";
+            if(gameOver) drawGameOverScreen();
+        };
 
-        function setupImageLoader(inputId, statusId, callback) {
-            const loader = document.getElementById(inputId);
-            const status = document.getElementById(statusId);
-
-            loader.addEventListener('change', function(e) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const img = new Image();
-                    img.onload = function() {
-                        status.innerText = "✔️";
-                        status.className = "status-dot ready";
-                        callback(img);
-                        if(gameOver) drawGameOverScreen();
-                    };
-                    img.src = event.target.result;
-                };
-                if(e.target.files[0]) {
-                    reader.readAsDataURL(e.target.files[0]);
-                }
-            }, false);
-        }
+        let imgKelompok = new Image();
+        imgKelompok.src = "logo kelompok.jpeg";
+        imgKelompok.onload = () => {
+            document.getElementById("statusKelompok").innerText = "✔️";
+            document.getElementById("statusKelompok").className = "status-dot ready";
+            if(gameOver) drawGameOverScreen();
+        };
 
         const segawon = {
             x: 90,
@@ -296,15 +278,15 @@
             let yPos = (canvas.height / 2) - 125;
             
             // Logo Sekolah (Kiri)
-            if (imgSekolah) {
+            if (imgSekolah.complete && imgSekolah.naturalWidth !== 0) {
                 ctx.drawImage(imgSekolah, (canvas.width / 2) - 130, yPos, logoWidth, logoHeight);
             }
             // Logo Jurusan (Tengah)
-            if (imgJurusan) {
+            if (imgJurusan.complete && imgJurusan.naturalWidth !== 0) {
                 ctx.drawImage(imgJurusan, (canvas.width / 2) - 37.5, yPos, logoWidth, logoHeight);
             }
             // Logo Kelompok (Kanan)
-            if (imgKelompok) {
+            if (imgKelompok.complete && imgKelompok.naturalWidth !== 0) {
                 ctx.drawImage(imgKelompok, (canvas.width / 2) + 55, yPos, logoWidth, logoHeight);
             }
 
@@ -375,12 +357,12 @@
             ctx.fillStyle = "#ffcc00";
             ctx.fillRect(0, 350, canvas.width, 4);
 
-            // Karakter Utama saat main (Bisa pakai Logo Kelompok atau default Beruang jika kosong)
+            // Karakter Utama saat main
             segawon.danceTimer += 0.25;
             let runBounce = segawon.isGrounded ? Math.sin(segawon.danceTimer) * 2 : 0;
             
-            if (imgKelompok) {
-                // Gunakan logo kelompok sebagai karakter utama yang melompat
+            if (imgKelompok.complete && imgKelompok.naturalWidth !== 0) {
+                // Gunakan logo kelompok sebagai karakter utama yang melompat jika berhasil termuat
                 ctx.drawImage(imgKelompok, segawon.x, segawon.y + runBounce, segawon.width, segawon.height);
             } else {
                 // Default Beruang Cokelat
@@ -391,7 +373,7 @@
                 ctx.fillStyle = "#5c2d0c";
                 ctx.beginPath(); ctx.arc(segawon.x + 8, segawon.y + runBounce, 8, 0, Math.PI*2); ctx.arc(segawon.x + 42, segawon.y + runBounce, 8, 0, Math.PI*2); ctx.fill();
                 ctx.fillStyle = "#000";
-                ctx.beginPath(); ctx.arc(segawon.x + 18, segawon.y + 18 + runBounce, 3.5, 0, Math.PI*2); ctx.arc(segawon.x + 34, segawon.y + 18 + runBounce, 3.5, 0, Math.PI*2); fill();
+                ctx.beginPath(); ctx.arc(segawon.x + 18, segawon.y + 18 + runBounce, 3.5, 0, Math.PI*2); ctx.arc(segawon.x + 34, segawon.y + 18 + runBounce, 3.5, 0, Math.PI*2); ctx.fill();
                 ctx.fillStyle = "#f5d9a0";
                 ctx.beginPath(); ctx.arc(segawon.x + 26, segawon.y + 25 + runBounce, 5, 0, Math.PI*2); ctx.fill();
             }
